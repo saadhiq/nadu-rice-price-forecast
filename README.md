@@ -23,3 +23,13 @@ streamlit run app.py       # website at http://localhost:8501
 ## Known data issue
 `inflation_ccpi_pct` jumps 4.0 → 17.4 between Nov and Dec 2023 (two series spliced). Re-take one
 definition for all months from a single DCS/CBSL table, then `python run_all.py`.
+
+## Website (Google Cloud Run)
+Static site in `web/` (Vite + Chart.js) reading `web/public/data/site.json` from step 6.
+Live: https://nadu-rice-806562626765.asia-south1.run.app
+
+```
+python run_all.py                       # refresh results + site data
+cd web && npm run dev                   # local preview
+gcloud run deploy nadu-rice --source web --project=nadu-rice-forecast --region=asia-south1 --allow-unauthenticated --max-instances=2
+```
