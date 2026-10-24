@@ -1,0 +1,8 @@
+test,system,stat,p_value,rank,crit_5pct
+Engle-Granger,log_wholesale ~ log_thai_rice_lkr,-3.3256,0.0513,,
+Engle-Granger,log_wholesale ~ log_lkr_per_usd,-2.9671,0.1182,,
+Engle-Granger,log_wholesale ~ log_oil_lkr,-2.5633,0.2519,,
+Engle-Granger,log_wholesale ~ log_retail,-7.5634,0.0,,
+Johansen trace,log_wholesale + log_lkr_per_usd + log_thai_rice_usd (H0: rank<=0),26.3231,,0.0,29.7961
+Johansen trace,log_wholesale + log_lkr_per_usd + log_thai_rice_usd (H0: rank<=1),4.8218,,0.0,15.4943
+Johansen trace,log_wholesale + log_lkr_per_usd + log_thai_rice_usd (H0: rank<=2),0.2558,,0.0,3.8415

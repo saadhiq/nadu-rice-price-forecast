@@ -1,0 +1,19 @@
+variable,form,ADF_stat,ADF_p,KPSS_stat,KPSS_p,verdict
+log_wholesale,level,-2.7404,0.2197,0.1672,0.0324,non-stationary
+log_wholesale,first difference,-5.1566,0.0,0.0397,0.1,stationary
+log_retail,level,-3.5069,0.0387,0.1872,0.0208,inconclusive
+log_retail,first difference,-4.6485,0.0001,0.0513,0.1,stationary
+log_lkr_per_usd,level,-2.0781,0.5583,0.4698,0.01,non-stationary
+log_lkr_per_usd,first difference,-9.8411,0.0,0.0833,0.1,stationary
+log_thai_rice_usd,level,-2.1662,0.5089,0.434,0.01,non-stationary
+log_thai_rice_usd,first difference,-11.4425,0.0,0.067,0.1,stationary
+log_thai_rice_lkr,level,-2.6185,0.2715,0.2747,0.01,non-stationary
+log_thai_rice_lkr,first difference,-11.4152,0.0,0.0415,0.1,stationary
+log_oil_lkr,level,-2.7886,0.2012,0.2693,0.01,non-stationary
+log_oil_lkr,first difference,-10.4818,0.0,0.0708,0.1,stationary
+log_last_harvest,level,-3.4056,0.0506,0.095,0.1,inconclusive
+log_last_harvest,first difference,-26.104,0.0,0.0079,0.1,stationary
+rain_mm,level,-4.7741,0.0005,0.0384,0.1,stationary
+rain_mm,first difference,-15.5992,0.0,0.0688,0.1,stationary
+inflation_ccpi_pct,level,-3.8765,0.0131,0.0938,0.1,stationary
+inflation_ccpi_pct,first difference,-6.9543,0.0,0.0333,0.1,stationary

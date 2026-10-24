@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+*.pkl
+*.xlsx
+~$*
+results/*console*.txt
+results/run_all_log.txt
+results/app_smoke.txt
+.streamlit/secrets.toml

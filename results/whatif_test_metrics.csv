@@ -1,0 +1,4 @@
+model,MAPE,RMSE,direction_accuracy_pct
+no-change (naive),2.368,6.681,
+OLS-ARDL (HAC),2.883,7.809,69.444
+LightGBM,2.942,7.578,61.111

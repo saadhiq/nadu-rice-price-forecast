@@ -1,0 +1,6 @@
+cause,effect,best_lag,F,p_value,p_lag3,p_lag6
+log_lkr_per_usd,Δlog_wholesale,1,6.5853,0.0107,0.0441,0.1298
+log_thai_rice_usd,Δlog_wholesale,3,1.2187,0.303,0.303,0.5449
+log_oil_lkr,Δlog_wholesale,3,1.2548,0.2901,0.2901,0.3212
+log_last_harvest,Δlog_wholesale,6,7.1944,0.0,0.0023,0.0
+rain_mm,Δlog_wholesale,2,20.1404,0.0,0.0,0.0

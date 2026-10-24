@@ -1,0 +1,36 @@
+{
+  "best_model": "ensemble",
+  "sarima_order": [
+    0,
+    1,
+    0
+  ],
+  "sarima_seasonal_order": [
+    1,
+    0,
+    1,
+    12
+  ],
+  "last_observed": "2026-06-01",
+  "features": [
+    "dlog_p_lag0",
+    "dlog_p_lag1",
+    "dlog_p_lag2",
+    "dlog_p_lag5",
+    "dlog_p_lag11",
+    "mom_3",
+    "mom_12",
+    "dev_ma12",
+    "dlog_fx",
+    "dlog_fx_3",
+    "dlog_thai_lkr_3",
+    "dlog_oil_lkr_3",
+    "log_last_harvest",
+    "dlog_last_harvest",
+    "rain_3m",
+    "inflation",
+    "crisis",
+    "month_sin",
+    "month_cos"
+  ]
+}

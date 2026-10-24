@@ -1,0 +1,6 @@
+paddy_prod_per_month_kt: verified Jan-Mar of year t = Maha (t-1)/t. Jan-Mar 2000 (Maha 1999/2000) and Apr-Jun 2026 (Yala 2026) not yet available.
+Added last_harvest_prod_kt = total output of the latest completed season.
+months_since_harvest recoded: Feb/Aug = 0 ... Jan/Jul = 5 (consistent with is_harvest_month = Feb, Mar, Aug, Sep).
+agri_labor_pct_prev_year: 2026 forward-filled from 2025 (flag agri_labor_imputed).
+WARNING inflation_ccpi_pct jumps 4.0 -> 17.4 between Nov and Dec 2023: two different series were spliced. Re-take ONE definition (12-month moving average OR year-on-year) for all months from a single DCS/CBSL table.
+Excluded from predictors: retail_price (same-month outcome -> leakage), wholesale_filled/retail_filled (data flags), oil_lkr_bbl & thai_rice_lkr_kg are products of other columns (use either USD+FX or LKR versions, not both).
