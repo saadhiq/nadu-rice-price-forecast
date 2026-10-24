@@ -31,18 +31,20 @@ def load_data():
 @st.cache_data
 def load_model():
     meta = json.load(open(ROOT / "models" / "whatif_meta.json"))
-    return pd.Series(meta["params"]), meta
+    lh = json.load(open(ROOT / "results" / "long_horizon_params.json"))
+    return pd.Series(meta["params"]), meta, lh
 
 
 hist, fc, summary, coefs = load_data()
-params, meta = load_model()
+params, meta, LH = load_model()
 D = meta["defaults"]
 best = fc["best_model"].iloc[0]
 
 st.title("🌾 Nadu Rice Wholesale Price — Sri Lanka")
 st.caption(f"Pettah wholesale market (HARTI), Rs/kg · data to {pd.Timestamp(meta['last_date']):%B %Y}")
 
-tab_fc, tab_wi, tab_about = st.tabs(["📈 12-month forecast", "🔧 What-if price predictor", "ℹ️ Model & data"])
+tab_fc, tab_any, tab_wi, tab_about = st.tabs(
+    ["📈 12-month forecast", "📅 Price for any month", "🔧 What-if price predictor", "ℹ️ Model & data"])
 
 # =====================================================================  FORECAST
 with tab_fc:
@@ -81,6 +83,88 @@ with tab_fc:
     st.info("Intervals are built from the model's real errors in past forecasts (rolling back-tests), so about "
             "8 in 10 future prices should fall inside the 80% band. Shocks like policy changes or "
             "currency crises can push prices outside it.")
+
+# =====================================================================  ANY MONTH
+with tab_any:
+    st.markdown("Pick any month and year to get the expected wholesale price. Up to 12 months ahead the "
+                "forecasting model is used; further ahead the price is **projected** from the long-run trend, "
+                "your inflation assumption and the month's seasonal pattern.")
+    last_date = pd.Timestamp(LH["last_date"])
+    a, b, c = st.columns([1, 1, 2])
+    year = a.selectbox("Year", range(last_date.year, 2036), index=min(4, 2035 - last_date.year))
+    month = b.selectbox("Month", range(1, 13), index=7, format_func=lambda m: MONTH_NAMES[m - 1], key="any_month")
+    with c:
+        mode = st.radio("Annual price growth assumption",
+                        ["Inflation-based (recommended)", f"Historical trend ({LH['growth_historical']:.1%}/yr)",
+                         "Custom"], horizontal=True)
+        if mode.startswith("Inflation"):
+            infl = st.slider("Expected average inflation (% per year)", 0.0, 20.0,
+                             LH["inflation_target"] * 100, 0.5,
+                             help="Central Bank of Sri Lanka target: 5%. 2000–2026 average: "
+                                  f"{LH['inflation_avg']:.1%}.")
+            g = infl / 100 + LH["real_trend"]
+        elif mode.startswith("Historical"):
+            g = LH["growth_historical"]
+        else:
+            g = st.slider("Price growth (% per year)", -5.0, 25.0, 6.0, 0.5) / 100
+
+    target = pd.Timestamp(year=year, month=month, day=1)
+    h = (target.year - last_date.year) * 12 + target.month - last_date.month
+    last_price = LH["last_price"]
+
+    def projection(k, m):
+        centre = np.exp(LH["base_log_level"] + g * k / 12 + LH["seasonal"][str(m)])
+        sd = LH["sd_by_h"][str(min(k, 120))]
+        return centre, centre * np.exp(-1.2816 * sd), centre * np.exp(1.2816 * sd)
+
+    if h <= 0:
+        row = hist[hist["date"] == target]
+        st.metric(f"Actual price, {MONTH_NAMES[month - 1]} {year}", f"Rs {row['wholesale_price'].iloc[0]:.2f}")
+    else:
+        if h <= 12:
+            r = fc[fc["date"] == target].iloc[0]
+            point, lo, hi, method = r["point"], r["lo80"], r["hi80"], f"12-month forecast model ({best})"
+            path = fc[fc["date"] <= target]
+            px, pc, pl, ph = path["date"], path["point"], path["lo80"], path["hi80"]
+        else:
+            point, lo, hi = projection(h, month)
+            method = f"long-horizon projection ({g:.1%} per year)"
+            px = pd.date_range(last_date + pd.DateOffset(months=1), target, freq="MS")
+            pts = [projection(k, d.month) for k, d in enumerate(px, start=1)]
+            pc, pl, ph = [p[0] for p in pts], [p[1] for p in pts], [p[2] for p in pts]
+
+        m1, m2, m3 = st.columns(3)
+        m1.metric(f"Expected price, {MONTH_NAMES[month - 1]} {year}", f"Rs {point:.2f}",
+                  f"{(point / last_price - 1) * 100:+.1f}% vs {last_date:%b %Y}")
+        m2.metric("80% range", f"Rs {lo:.0f} – {hi:.0f}")
+        m3.metric("Months ahead", f"{h}", help=f"Method: {method}")
+
+        h0 = hist[hist["date"].dt.year >= 2015]
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=[*px, *px[::-1]], y=[*ph, *pl[::-1]], fill="toself",
+                                 fillcolor="rgba(235,104,52,0.18)", line=dict(width=0), name="80% range",
+                                 hoverinfo="skip"))
+        fig.add_trace(go.Scatter(x=h0["date"], y=h0["wholesale_price"], name="Actual",
+                                 line=dict(color=BLUE, width=2),
+                                 hovertemplate="%{x|%b %Y}: Rs %{y:.2f}<extra>Actual</extra>"))
+        fig.add_trace(go.Scatter(x=[last_date, *px], y=[last_price, *pc], name="Expected",
+                                 line=dict(color=ORANGE, width=2),
+                                 hovertemplate="%{x|%b %Y}: Rs %{y:.2f}<extra>Expected</extra>"))
+        fig.add_trace(go.Scatter(x=[target], y=[point], mode="markers+text", marker=dict(color=ORANGE, size=12),
+                                 text=[f"Rs {point:.0f}"], textposition="top center", showlegend=False,
+                                 hoverinfo="skip"))
+        fig.update_layout(height=420, hovermode="x unified", margin=dict(l=10, r=10, t=30, b=10),
+                          yaxis_title="Rs per kg", legend=dict(orientation="h", y=1.08))
+        st.plotly_chart(fig, width="stretch")
+
+        if h > 12:
+            bt = pd.DataFrame(LH["backtest"]).set_index("h")
+            near = bt.index[np.argmin(np.abs(bt.index - min(h, 60)))]
+            st.info(f"How reliable is this? Projections made {near} months ahead in 2005–2021 missed the actual "
+                    f"price by {bt.loc[near, 'MAPE_projection']:.0f}% on average (vs "
+                    f"{bt.loc[near, 'MAPE_naive']:.0f}% for assuming no change). Treat the expected price as a "
+                    "planning figure and the 80% range as the realistic spread — exchange-rate crises, droughts "
+                    "or policy changes can move prices outside it.")
 
 # =====================================================================  WHAT-IF
 with tab_wi:
